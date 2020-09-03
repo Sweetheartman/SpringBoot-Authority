@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="/layui/css/layui.css">
+</head>
+<style>
+    .layui-table tbody tr:hover, .layui-table thead tr, .layui-table-click, .layui-table-header, .layui-table-hover, .layui-table-mend, .layui-table-patch, .layui-table-tool, .layui-table-total, .layui-table-total tr, .layui-table[lay-even] tr:nth-child(even) {
+        background-color: white;
+    }
+</style>
+<body>
+<div style="padding: 20px; background-color: #F2F2F2;">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-body">
+                    <div class="layui-container" style="width:400px;">
+                        <form action="" class="layui-form" id="passForm">
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">旧密码</label>
+                                <div class="layui-input-block">
+                                    <input type="password" name="oldPwd" class="layui-input" lay-verify="required" />
+                                </div>
+
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">新密码</label>
+                                <div class="layui-input-block">
+                                    <input type="password" name="newPwd" id="newPwd" class="layui-input" lay-verify="required" />
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">确认密码</label>
+                                <div class="layui-input-block">
+                                    <input type="password" name="rePass" lay-verify="required|repass" class="layui-input" verify="required" />
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label"></label>
+                                <div class="layui-input-block">
+                                    <button class="layui-btn" lay-submit lay-filter="baseSubmit">保存</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+<script src="/layui/layui.js"></script>
+<script src="/js/core.util.js"></script>
+<script src="https://cdn.bootcss.com/jsencrypt/3.0.0-beta.1/jsencrypt.js"></script>
+<script>
+    var PUBLIC_KEY = 'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDfQNVcVF7UBlQdt5L/E/8xE+6ZY4MTB2uAHzzD6X7QTt8ihW4+hNsyEEKgdEHj0Xys3nNca+lC3jxX9xkxfQs8ShmJLe+wOVozIlWA4ZUpLclB0oSaCqxPy7+ca9n0QcpjOorsQ0n1aI2yvlSvwW1INc+2DIV2oqeigFzesraPmQIDAQAB';
+    var encrypt = new JSEncrypt();
+    encrypt.setPublicKey(PUBLIC_KEY);
+    layui.use(['form','layer','jquery'],function () {
+        var form = layui.form;
+        var layer= layui.layer;
+        var $ =layui.jquery;
+        form.verify({
+            repass: function(value) {
+                var pass = $("#newPwd").val();
+                if(pass!=value) {
+                    return '两次输入的密码不一致';
+                }
+            }
+        })
+        form.on('submit(baseSubmit)',function (data) {
+            CoreUtil.sendAjax("/api/user/pwd",encrypt.encrypt(JSON.stringify(data.field)),function (res) {
+                layer.msg("密码已经变更请重新登录");
+                top.window.location.href="/index/login";
+            },"PUT",true);
+
+            return false;
+        })
+    });
+</script>
+</html>
